@@ -1,10 +1,8 @@
-#include <stdio.h>
-
 #include "game.h"
 
 int main(void) {
 
-	GameStart();
+	GameInit();
 
 	GameTask();
 	

@@ -1,7 +1,9 @@
 #include "gamerule.h"
 
-/*  Controlla se la partita è finita e se c'è un vincitore
-*/
+extern game_struct mGame;
+extern game_mode_enum mGamemode;
+
+//Controlla se la partita è finita e se c'è un vincitore
 bool isGameEnded(void){
 	//Controllo righe
     if(CheckRows())
@@ -22,72 +24,66 @@ bool isGameEnded(void){
     return false;
 }
 
-/*  Controlla le righe della partita per un vincitore
-*/
+//Controlla le righe della partita per un vincitore 
 bool CheckRows(void){
 
 	int i;
+    //Per ogni riga
 	for(i = 0;i < 3;i++){
 
         //Controllo se la riga è uguale
-		if((game[i][0] == game[i][1]) && (game[i][1] == game[i][2])){
+		if((mGame.board[i][0] == mGame.board[i][1]) && (mGame.board[i][1] == mGame.board[i][2])){
             //Se è uguale salvo il vincitore
-		    winner = game[i][0];
-            //Se è valore di default non è finita partita
-            if(winner == EMPTY_VALUE)
-                continue;
-            //Restituisco partita terminata
-		    return true;
-		 } else {
-            //La riga non è uguale
-            continue;
+		    mGame.winner = mGame.board[i][0];
+            //Se vincitore è definito
+            if(mGame.winner != NONE){
+                //Restituisco partita terminata
+		        return true;
+            }
         }
 
-	 }
-    //La prima casella non è stata ancora scelta
+	}
+    //Nessuna combinazione vincente nelle righe
     return false;
 }
 
-/*  Controlla le colonne della partita per un vincitore
-*/
+//Controlla le colonne della partita per un vincitore
 bool CheckCols(void) {
 
 	int i;
 	for(i = 0;i < 3;i++){
         //Controllo se la colonna è uguale
-		if((game[0][i] == game[1][i]) && (game[1][i] == game[2][i])){
+		if((mGame.board[0][i] == mGame.board[1][i]) && (mGame.board[1][i] == mGame.board[2][i])){
             //Se è uguale salvo il vincitore
-		    winner = game[0][i];
+		    mGame.winner = mGame.board[0][i];
             //Se è valore di default non è finita partita
-            if(winner != EMPTY_VALUE){
+            if(mGame.winner != NONE){
 		        return true;
             }
         }
 	}
-    //La prima casella non è stata ancora scelta
+    //Nessuna combinazione vincente sulle colonne
     return false;
 }
 
-/* Controllo le due diagonali della griglia
-*/
+//Controllo le due diagonali della griglia
 bool CheckDiagonal(void){
     
-
     //Controllo la prima diagonale
-	if(game[0][0] == game[1][1] && game[1][1] == game[2][2]){
+	if(mGame.board[0][0] == mGame.board[1][1] && mGame.board[1][1] == mGame.board[2][2]){
         //Se le caselle sono uguali
-		winner = game[0][0];
+		mGame.winner = mGame.board[0][0];
         //Se il vincitore non è il valore default
-        if(winner != EMPTY_VALUE)
+        if(mGame.winner != NONE)
 		    return true;
 	}
 
     //Controllo la seconda diagonale
-	if(game[0][2] == game[1][1] && game[1][1] == game[2][0]){
+	if(mGame.board[0][2] == mGame.board[1][1] && mGame.board[1][1] == mGame.board[2][0]){
 		
-        winner = game[0][2];
+        mGame.winner = mGame.board[0][2];
 		//Se il vincitore non è il valore default
-        if(winner != EMPTY_VALUE)
+        if(mGame.winner != NONE)
 		    return true;
 	}
 
@@ -103,12 +99,12 @@ bool isDraw(void){
         for(j = 0; j < 3; j++){
 
             //Controllo se la casella non ha il valore default
-            if(game[i][j] == EMPTY_VALUE)
+            if(mGame.board[i][j] == NONE)
                 return false;
         }
     }
 
     //Controllato tutte le caselle siano state riempite senza un vincitore
-    winner = DRAW_VALUE;
+    mGame.winner = DRAW;
     return true;
 }

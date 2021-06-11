@@ -1,247 +1,172 @@
 #include "game.h"
 
-int game[3][3];
-int gamemode;
-char player;
-int winner;
-bool forcedExit = false;
-int player_1_score = 0;
-int player_2_score = 0;
+//VARIABILI
+game_struct mGame;
+game_mode_enum mGamemode;
 
 //FUNZIONI
-/*	Inizializza le variabili di gioco
-*/
-void GameStart(void){
+//Inizializza le variabili di gioco
+void GameInit(void){
 
 	ResetGame();
 
 	//Disegno menu iniziale
-	DrawInitialMenu();
+	mGamemode = DrawInitialMenu();
 }
 
-/*	Disegna menu iniziale del gioco
-*/
-void DrawInitialMenu(void){
-	printf("%s\n","********** TIC TAC TOE **********");
-	printf("%s\n","****Press any key to continue****");
-	getch();
-
-	printf("\n1. PLAYER vs COMPUTER\n2. PLAYER vs PLAYER\n\nMake your choice: ");
-	scanf("%d",&gamemode);
-}
-
-/* Main task del gioco
-*/
+//Main task del gioco
 void GameTask(void){
 
-	DrawScene();
+	DrawMainScene();
 	do{
 		
-		GetPlayerInput();
-		if(forcedExit){
-			break;
+		int choice = GetPlayerInput();
+		//Se scelta valida
+		if(isChoiceValid(choice)){
+
+			//Inserisco la scelta nel gioco
+			int row = GetRow(choice);
+			int col = GetColumn(choice);
+			mGame.board[row][col] = mGame.playing_player;
+
+			//Cambio giocatore
+			PlayerSwitch();
 		}
-		DrawScene();
+		DrawMainScene();
 
 	}while(!isGameEnded());
 
 }
 
-/*	Disegna la grafica del gioco
-*/
-void DrawScene(){
+//Cambia il giocatore che sta giocando
+void PlayerSwitch(void){
 	
-	//Pulisco schermo
-	system("cls");
-	
-	char cell = EMPTY_VALUE;
-	//Disegno la tabella di gioco
-	int i,j;
-	if(gamemode == 1){
-		printf("PUNTEGGIO:\n\n	GIOCATORE: %d\n	       AI: %d\n",player_1_score,player_2_score);
-	} else {
-		printf("PUNTEGGIO:\n\n	GIOCATORE 1: %d\n	GIOCATORE 2: %d\n",player_1_score,player_2_score);
+	if(mGame.playing_player == PLAYER_1){
+	mGame.playing_player = PLAYER_2;
 	}
-	
-	printf("\n");
-	for(i = 0;i < 3;i++){	
-		printf("     ");
-		for(j = 0;j < 3;j++){
-
-			cell = game[i][j];
-
-			if(j != 2){
-				printf("%2c |",cell);
-			}else{
-				printf("%2c ",cell);
-			}
-		}
-		if(i != 2){
-			printf("\n     ---|---|---\n");
-		}else{
-			printf("\n");
-		}
+	else {								
+	mGame.playing_player = PLAYER_1;
 	}
 }
 
-/*	Cambia il giocatore che sta giocando
-*/
-void PlayerSwitch(){
-	
-	if(player == PLAYER_1){
+//Se la casella scelta è libera restituisce TRUE altrimenti FALSE
+bool isChoiceValid(int choice){
 
-		player = PLAYER_2;
-	}else{
-		player = PLAYER_1;
+	int row = GetRow(choice);
+	int col = GetColumn(choice);
+
+	//Controllo se la casella è occupata
+	if(mGame.board[row][col] == NONE){
+		//Casella libera, mossa valida
+		return true;
 	}
+
+	//Casella piena, mossa non valida
+	return false;
+	
 }
 
-/*Prende l'input del giocatore e se posto libero inserisce la mossa cambiando giocatore
-*/
-void GetPlayerInput(){
-	int choice = 0,row = 0,col = 0;
-	if(DEBUG_MODE){
-		printf("\nDEBUG MODE ON - 0 to reset	99 to exit\n");
-	}
-
-	if(gamemode == 1 && player == PLAYER_2){
-		//Gioca AI
-		choice = AIPlay();
-
-	} else{
-		printf("\nPlayer %c move: ", player);
-		scanf("%d",&choice);
-	}
-	
-
-	//Debug mode
-	if(DEBUG_MODE){
-	
-		if(choice == 0){
-			
-			//Reset play
-			ResetGame();
-			return;
-		}
-
-		if(choice == 99){
-			forcedExit = true;
-			return;
-		}
-	}
-
-	//Switch per righe
-	switch(choice){
-		case 1:
-		case 2:
-		case 3:
-			row = 2;
-			break;
-		case 4:
-		case 5:
-		case 6:
-			row = 1;
-			break;
-		default: 
-			row = 0;
-			break;
-	}
-
+//Restituisce il valore di colonna della scelta
+int GetColumn(int choice){
 	//Switch per colonne
 	switch(choice){
 		case 7:
 		case 4:
 		case 1:
-			col = 0;
+			return 0;
 			break;
 		case 8:
 		case 5:
 		case 2:
-			col = 1;
+			return 1;
 			break;
 		default: 
-			col = 2;
+			return 2;
 			break;
 	}
+}
 
-	//Se scelta valida
-	if(isChoiceValid(row,col)){
-
-		//Inserisco la scelta nel gioco
-		InsertChoice(row,col);
-
-		//Cambio giocatore
-		PlayerSwitch();
+//Restituisce il valore di riga della scelta
+int GetRow(int choice){
+	//Switch per righe
+	switch(choice){
+		case 1:
+		case 2:
+		case 3:
+			return 2;
+			break;
+		case 4:
+		case 5:
+		case 6:
+			return 1;
+			break;
+		default: 
+			return 0;
+			break;
 	}
 }
 
-/*	Se la casella non ha un valore inserito restituisco TRUE
-*/
-bool isChoiceValid(int row,int col){
-
-	if(game[row][col] == EMPTY_VALUE){
-		
-		return true;
-	} else {
-		return false;
-	}
-}
-
-/*	Inserisco la scelta del giocatore nel riquadro
-*/
-void InsertChoice(int row,int col){	
-	//Inserisco scelta
-	game[row][col] = player;
-
-}
-
-/*	Stampa a schermo il vincitore e chiude il gioco
-*/
-void GameEnd(){
+//Stampa a schermo il vincitore e chiude il gioco
+void GameEnd(void){
 	//Se vincitore diverso da DEFAULT
-	if(winner != EMPTY_VALUE){
+	if(mGame.winner != NONE){
 
-		//Vincitore DRAW
-		if(winner == DRAW_VALUE)
-			printf("\n\nDRAW! \n\n");
-		else	//Vincitore PLAYERS
-		printf("\n\n%c is the winner! \n\n",winner);
-		printf("Do you want to play again? Y/N ");
-		char endgame;
-		scanf(" %c",&endgame);
-		if(endgame == 'y' || endgame == 'Y'){
-			if(winner == PLAYER_1){
-				player_1_score++;
-			} else if(winner == PLAYER_2){
-				player_2_score++;
-			} else {
-				player_1_score++;
-				player_2_score++;
-			}
+		//Imposta il punteggio
+		SetScore(mGame.winner);
 
-			ResetGame();
-			GameTask();
-			GameEnd();
+		//Stampo il punteggio
+		DrawMainScene();
+
+		//Restituisce true se il giocatore ha chiesto di rigiocare
+		if(DrawEndScene()){	
+
+			//Avvio un'altra partita
+			RestartGame();
+
 		} else {
-
+			//Smetto di giocare, chiedo prima di uscire l'inserimento di un quasiasi valore
 			system("pause");
 		}
 		
-	} else 	//Sto giocando
-		printf("\n %c playing... ",player);
+	} else 	//Sto giocando winner = NONE
+		printf("\n %c playing... ",mGame.playing_player);
 }
 
-/*
-*/
+//Fornisce i punteggi in base al vincitore fornito
+void SetScore(player_enum winner){
+	//Fornisco punteggi
+	if(winner == PLAYER_1){
+		mGame.score_p1++;
+	} else if(winner == PLAYER_2){
+		mGame.score_p2++;
+	} else if(winner == DRAW){
+		mGame.score_p1++;
+		mGame.score_p2++;	
+	}
+}
+
+//Reset variabili di gioco
 void ResetGame(void){
-	int i,j;
+
+	//Resetto la board
+	
+	int i, j;
 	for(i = 0; i < 3; i++){
 		for(j = 0; j < 3; j++){
-			game[i][j] = EMPTY_VALUE;
+			mGame.board[i][j] = NONE;
 		}
 	}
-	forcedExit = false;
-	player = PLAYER_1;
-	winner = EMPTY_VALUE;
 
+	//Resetto giocatore e vincitore
+	mGame.playing_player = PLAYER_1;
+	mGame.winner = NONE;
+
+}
+
+//Per giocare nuovamente resetto e chiamo gametask e gameend
+void RestartGame(void){
+
+	ResetGame();
+	GameTask();
+	GameEnd();
 }
