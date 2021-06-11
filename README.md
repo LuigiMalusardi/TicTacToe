@@ -1,10 +1,7 @@
 # TIC TAC TOE GAME
 
-## ISTRUZIONI
+## DESCRIZIONE
 
-Avvia il programma main.exe nella cartella bin e segui le istruzioni a schermo
+Gioco Tic Tac Toe con terminale. Due modalità di gioco: PVP o PVE (Algoritmo MinMax).
 
-
-### BUG CONOSCIUTI
-
-Quando arrivo a fine partita non segna nello score finale il punteggio dell'ultima partita
+Per giocare seguire le indicazioni a schermo.
